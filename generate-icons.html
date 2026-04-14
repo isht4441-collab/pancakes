@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head><title>Icon Generator</title></head>
+<body>
+<p>Open console to download icons, or right-click each canvas to save.</p>
+<script>
+const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+sizes.forEach(size => {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#3E2723';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, size, size, size * 0.15);
+  ctx.fill();
+
+  // Inner circle
+  ctx.fillStyle = '#D4A84B';
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size * 0.32, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Croissant emoji
+  ctx.font = `${size * 0.45}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🥐', size/2, size/2 + size*0.02);
+
+  document.body.appendChild(canvas);
+  const p = document.createElement('p');
+  p.textContent = `icon-${size}.png — Right click canvas above to save`;
+  document.body.appendChild(p);
+
+  // Auto download
+  const link = document.createElement('a');
+  link.download = `icon-${size}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+</script>
+</body>
+</html>

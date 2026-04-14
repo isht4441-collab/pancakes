@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>La Patisserie - Artisan Pastries</title>
+
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#3E2723">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="La Patisserie">
+  <link rel="apple-touch-icon" href="icons/icon-152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+  <meta name="description" content="Handcrafted French pastries baked with tradition since 1987">
+  <!-- Prevent phone number detection -->
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- Splash screens for iPhone -->
+  <meta name="apple-mobile-web-app-title" content="Patisserie">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --cream: #FFF8F0;
+      --warm-brown: #8B6914;
+      --dark-brown: #3E2723;
+      --gold: #D4A84B;
+      --blush: #F5E1DA;
+      --soft-pink: #FAEAE0;
+      --text: #4A3728;
+      --accent: #C1694F;
+      /* iPhone safe areas */
+      --sat: env(safe-area-inset-top);
+      --sar: env(safe-area-inset-right);
+      --sab: env(safe-area-inset-bottom);
+      --sal: env(safe-area-inset-left);
+    }
+
+    html {
+      /* Fix for iOS 100vh issue */
+      height: -webkit-fill-available;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      overflow-x: hidden;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      /* Prevent pull-to-refresh bounce */
+      overscroll-behavior-y: none;
+      /* Smoother scrolling on iOS */
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Tap highlight removal for iOS */
+    a, button { -webkit-tap-highlight-color: transparent; }
+
+    /* ── Navigation ── */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+      padding: calc(0.8rem + var(--sat)) 1.5rem 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.4s, box-shadow 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(255, 248, 240, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 2px 20px rgba(62,39,35,0.08);
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--dark-brown);
+      text-decoration: none;
+      letter-spacing: 1px;
+    }
+    .logo span { color: var(--gold); }
+
+    /* Hamburger Menu Button */
+    .menu-toggle {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 44px;
+      height: 44px;
+      align-items: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 10px;
+      z-index: 1001;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .menu-toggle span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--dark-brown);
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    .menu-toggle.active span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    .menu-toggle.active span:nth-child(2) { opacity: 0; }
+    .menu-toggle.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    /* Mobile Slide-in Menu */
+    .nav-links {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 75%;
+      max-width: 300px;
+      height: 100vh;
+      height: 100dvh;
+      background: var(--cream);
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      padding: calc(5rem + var(--sat)) 2rem 2rem;
+      gap: 0;
+      transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: -10px 0 40px rgba(62,39,35,0.1);
+      z-index: 999;
+    }
+    .nav-links.open { right: 0; }
+    .nav-links li {
+      border-bottom: 1px solid rgba(62,39,35,0.06);
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--dark-brown);
+      font-weight: 400;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      display: block;
+      padding: 1.2rem 0;
+      transition: color 0.3s;
+      /* Touch-friendly: min 44px tap target */
+      min-height: 44px;
+    }
+    .nav-links a:active { color: var(--gold); }
+
+    /* Overlay behind menu */
+    .nav-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(62,39,35,0.3);
+      z-index: 998;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s;
+    }
+    .nav-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      background: linear-gradient(135deg, var(--cream) 0%, var(--blush) 50%, var(--soft-pink) 100%);
+      overflow: hidden;
+      padding: calc(4rem + var(--sat)) 1.5rem calc(3rem + var(--sab));
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(212,168,75,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 8s ease-in-out infinite;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -10%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(193,105,79,0.06) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 10s ease-in-out infinite reverse;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-30px) rotate(5deg); }
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 600px;
+      padding: 0 0.5rem;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 0.4rem 1.2rem;
+      border: 1px solid var(--gold);
+      border-radius: 50px;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 1s ease 0.2s both;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 10vw, 4rem);
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--dark-brown);
+      margin-bottom: 1.2rem;
+      animation: fadeInUp 1s ease 0.4s both;
+    }
+    .hero h1 em {
+      color: var(--gold);
+      font-style: italic;
+    }
+    .hero p {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--text);
+      opacity: 0.8;
+      max-width: 400px;
+      margin: 0 auto 2rem;
+      animation: fadeInUp 1s ease 0.6s both;
+    }
+    .hero-btn {
+      display: inline-block;
+      padding: 1rem 2.5rem;
+      background: var(--dark-brown);
+      color: var(--cream);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-radius: 50px;
+      transition: all 0.3s;
+      animation: fadeInUp 1s ease 0.8s both;
+      /* Touch friendly */
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .hero-btn:active {
+      background: var(--gold);
+      transform: scale(0.97);
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: calc(1.5rem + var(--sab));
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      z-index: 2;
+      animation: fadeInUp 1s ease 1.2s both;
+    }
+    .scroll-indicator span {
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text);
+      opacity: 0.5;
+    }
+    .scroll-line {
+      width: 1px;
+      height: 30px;
+      background: var(--gold);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(0.5); }
+      50% { opacity: 1; transform: scaleY(1); }
+    }
+
+    /* ── Section Styling ── */
+    section {
+      padding: 3.5rem 1.25rem;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .section-label {
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.8rem;
+      display: block;
+    }
+    .section-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 6vw, 2.5rem);
+      color: var(--dark-brown);
+      margin-bottom: 0.8rem;
+    }
+    .section-header p {
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.7;
+      opacity: 0.7;
+      font-size: 0.95rem;
+    }
+
+    /* ── Pastries Grid ── */
+    #pastries { background: white; }
+    .pastry-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .pastry-card {
+      background: var(--cream);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      /* Horizontal card layout on mobile */
+      display: grid;
+      grid-template-columns: 120px 1fr;
+    }
+    .pastry-card:active {
+      transform: scale(0.98);
+    }
+    .pastry-img {
+      width: 100%;
+      height: 100%;
+      min-height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+    .pastry-img.croissant { background: linear-gradient(135deg, #F5E6D3, #E8D5C0); }
+    .pastry-img.macaron { background: linear-gradient(135deg, #F0D5E8, #E8C5D8); }
+    .pastry-img.eclair { background: linear-gradient(135deg, #D5C4A1, #C4B08F); }
+    .pastry-img.tart { background: linear-gradient(135deg, #FFE0CC, #F5D0B8); }
+    .pastry-img.mille { background: linear-gradient(135deg, #FFF3E0, #F5E6CC); }
+    .pastry-img.chouquette { background: linear-gradient(135deg, #F5EEE6, #EDE3D5); }
+    .pastry-info { padding: 1.2rem; }
+    .pastry-info h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      color: var(--dark-brown);
+      margin-bottom: 0.3rem;
+    }
+    .pastry-origin {
+      font-size: 0.65rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.6rem;
+    }
+    .pastry-info p {
+      line-height: 1.6;
+      opacity: 0.7;
+      font-size: 0.85rem;
+      /* Limit lines on mobile */
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .pastry-tags {
+      display: flex;
+      gap: 0.4rem;
+      margin-top: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .pastry-tag {
+      padding: 0.2rem 0.6rem;
+      background: rgba(212,168,75,0.1);
+      border-radius: 50px;
+      font-size: 0.65rem;
+      color: var(--warm-brown);
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Story ── */
+    #story { background: var(--cream); }
+    .story-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .story-visual {
+      height: 280px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--blush), var(--soft-pink));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .story-emoji-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      padding: 1.5rem;
+    }
+    .story-emoji-grid span {
+      font-size: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 14px;
+      transition: transform 0.3s;
+    }
+    .story-emoji-grid span:active { transform: scale(1.15) rotate(5deg); }
+    .story-text h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: var(--dark-brown);
+      margin-bottom: 1rem;
+      line-height: 1.3;
+    }
+    .story-text p {
+      line-height: 1.8;
+      opacity: 0.75;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    .story-stats {
+      display: flex;
+      gap: 0;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(62,39,35,0.1);
+      justify-content: space-between;
+    }
+    .stat { text-align: center; flex: 1; }
+    .stat h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: var(--gold);
+    }
+    .stat p {
+      font-size: 0.7rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      opacity: 0.5 !important;
+      margin-bottom: 0 !important;
+    }
+
+    /* ── Process ── */
+    #process { background: var(--dark-brown); color: var(--cream); }
+    #process .section-label { color: var(--gold); }
+    #process .section-header h2 { color: var(--cream); }
+    #process .section-header p { color: rgba(255,248,240,0.6); }
+    .process-steps {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .process-step {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      border-radius: 16px;
+      background: rgba(255,248,240,0.05);
+      border: 1px solid rgba(255,248,240,0.08);
+      transition: all 0.3s;
+    }
+    .process-step:active {
+      background: rgba(255,248,240,0.1);
+      transform: scale(0.97);
+    }
+    .step-icon { font-size: 2.2rem; margin-bottom: 1rem; display: block; }
+    .step-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.75rem;
+      color: var(--gold);
+      letter-spacing: 2px;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+    .process-step h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    .process-step p { font-size: 0.8rem; line-height: 1.6; opacity: 0.6; }
+
+    /* ── Reviews ── */
+    #reviews { background: white; }
+    .reviews-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .review-card {
+      padding: 1.5rem;
+      background: var(--cream);
+      border-radius: 16px;
+    }
+    .review-stars {
+      color: var(--gold);
+      font-size: 0.9rem;
+      margin-bottom: 0.8rem;
+      letter-spacing: 2px;
+    }
+    .review-card blockquote {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-style: italic;
+      line-height: 1.6;
+      margin-bottom: 1.2rem;
+      color: var(--dark-brown);
+    }
+    .reviewer { display: flex; align-items: center; gap: 0.8rem; }
+    .reviewer-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--blush);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .reviewer-name { font-weight: 700; font-size: 0.85rem; }
+    .reviewer-title { font-size: 0.75rem; opacity: 0.5; }
+
+    /* ── Visit CTA ── */
+    #visit {
+      background: linear-gradient(135deg, var(--blush), var(--soft-pink));
+      text-align: center;
+      padding-bottom: calc(3.5rem + var(--sab));
+    }
+    #visit h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 6vw, 2.5rem);
+      color: var(--dark-brown);
+      margin-bottom: 0.8rem;
+    }
+    #visit > p {
+      max-width: 400px;
+      margin: 0 auto 2rem;
+      line-height: 1.7;
+      opacity: 0.7;
+      font-size: 0.95rem;
+    }
+    .visit-details {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      align-items: center;
+    }
+    .visit-item {
+      text-align: center;
+      background: rgba(255,255,255,0.4);
+      border-radius: 16px;
+      padding: 1.2rem 2rem;
+      width: 100%;
+      max-width: 300px;
+    }
+    .visit-item span { font-size: 1.8rem; display: block; margin-bottom: 0.4rem; }
+    .visit-item h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--dark-brown);
+      margin-bottom: 0.2rem;
+    }
+    .visit-item p { font-size: 0.85rem; opacity: 0.6; line-height: 1.5; }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 1rem 2.5rem;
+      background: var(--gold);
+      color: white;
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-radius: 50px;
+      transition: all 0.3s;
+      font-weight: 700;
+      min-height: 48px;
+    }
+    .cta-btn:active {
+      background: var(--dark-brown);
+      transform: scale(0.97);
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--dark-brown);
+      color: var(--cream);
+      padding: 2rem 1.5rem calc(1.5rem + var(--sab));
+      text-align: center;
+    }
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      margin-bottom: 0.8rem;
+    }
+    .footer-logo span { color: var(--gold); }
+    footer p { opacity: 0.4; font-size: 0.8rem; }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin: 1rem 0;
+      list-style: none;
+    }
+    .footer-links a {
+      color: var(--cream);
+      text-decoration: none;
+      opacity: 0.5;
+      font-size: 0.8rem;
+      transition: opacity 0.3s;
+      /* Touch target */
+      padding: 0.5rem;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+    .footer-links a:active { opacity: 1; }
+
+    /* ── Desktop breakpoints ── */
+    @media (min-width: 768px) {
+      nav { padding: 1.2rem 3rem; }
+      .menu-toggle { display: none; }
+      .nav-links {
+        position: static;
+        width: auto;
+        max-width: none;
+        height: auto;
+        background: transparent;
+        flex-direction: row;
+        padding: 0;
+        gap: 2.5rem;
+        box-shadow: none;
+      }
+      .nav-links li { border-bottom: none; }
+      .nav-links a {
+        font-size: 0.85rem;
+        padding: 0;
+        min-height: auto;
+        position: relative;
+      }
+      .nav-links a::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 0;
+        width: 0%;
+        height: 2px;
+        background: var(--gold);
+        transition: width 0.3s;
+      }
+      .nav-links a:hover { color: var(--gold); }
+      .nav-links a:hover::after { width: 100%; }
+      .nav-overlay { display: none !important; }
+
+      .hero { padding: 0 2rem; }
+      .hero h1 { font-size: clamp(3rem, 7vw, 6rem); }
+
+      section { padding: 6rem 3rem; }
+      .section-header { margin-bottom: 4rem; }
+
+      .pastry-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2.5rem;
+      }
+      .pastry-card {
+        display: block;
+        grid-template-columns: none;
+      }
+      .pastry-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 60px rgba(62,39,35,0.1);
+      }
+      .pastry-img {
+        height: 280px;
+        font-size: 6rem;
+      }
+      .pastry-info { padding: 2rem; }
+      .pastry-info h3 { font-size: 1.5rem; }
+      .pastry-info p {
+        -webkit-line-clamp: unset;
+        font-size: 0.95rem;
+      }
+
+      .story-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: center;
+      }
+      .story-visual { height: 500px; }
+      .story-text h2 { font-size: 2.5rem; }
+
+      .process-steps { grid-template-columns: repeat(4, 1fr); gap: 2rem; }
+      .process-step { padding: 2.5rem 1.5rem; }
+      .process-step:hover {
+        background: rgba(255,248,240,0.1);
+        transform: translateY(-5px);
+      }
+
+      .reviews-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+      }
+      .review-card { padding: 2.5rem; }
+
+      .visit-details {
+        flex-direction: row;
+        justify-content: center;
+        gap: 4rem;
+      }
+      .visit-item {
+        background: none;
+        padding: 0;
+        width: auto;
+      }
+
+      #visit { padding-bottom: 6rem; }
+      footer { padding: 3rem; }
+    }
+
+    /* ── Scroll animations ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Reduce motion for accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav id="navbar">
+    <a href="#" class="logo">La <span>Patisserie</span></a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#pastries">Pastries</a></li>
+      <li><a href="#story">Our Story</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#reviews">Reviews</a></li>
+      <li><a href="#visit">Visit</a></li>
+    </ul>
+  </nav>
+  <div class="nav-overlay" id="navOverlay"></div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">Est. 1987 &middot; Paris</span>
+      <h1>The Art of <em>Fine Pastry</em></h1>
+      <p>Handcrafted with love, baked with tradition. Every pastry tells a story of generations of French baking mastery.</p>
+      <a href="#pastries" class="hero-btn">Explore Our Pastries</a>
+    </div>
+    <div class="scroll-indicator">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- Pastries -->
+  <section id="pastries">
+    <div class="section-header reveal">
+      <span class="section-label">Our Collection</span>
+      <h2>Signature Pastries</h2>
+      <p>Each creation is a labour of love, made fresh daily with the finest French butter, organic flour, and seasonal ingredients.</p>
+    </div>
+    <div class="pastry-grid">
+      <div class="pastry-card reveal">
+        <div class="pastry-img croissant">&#129360;</div>
+        <div class="pastry-info">
+          <h3>Classic Croissant</h3>
+          <div class="pastry-origin">France &middot; Viennoiserie</div>
+          <p>72 layers of hand-laminated butter dough, each fold creating the perfect flaky, golden crescent that shatters at first bite.</p>
+          <div class="pastry-tags">
+            <span class="pastry-tag">Butter</span>
+            <span class="pastry-tag">Flaky</span>
+            <span class="pastry-tag">Classic</span>
+          </div>
+        </div>
+      </div>
+      <div class="pastry-card reveal">
+        <div class="pastry-img macaron">&#127856;</div>
+        <div class="pastry-info">
+          <h3>French Macaron</h3>
+          <div class="pastry-origin">France &middot; Confection</div>
+          <p>Delicate almond meringue shells with a crisp exterior and chewy interior, sandwiching luscious ganache in seasonal flavours.</p>
+          <div class="pastry-tags">
+            <span class="pastry-tag">Almond</span>
+            <span class="pastry-tag">Ganache</span>
+            <span class="pastry-tag">Elegant</span>
+          </div>
+        </div>
+      </div>
+      <div class="pastry-card reveal">
+        <div class="pastry-img eclair">&#127851;</div>
+        <div class="pastry-info">
+          <h3>Chocolate &Eacute;clair</h3>
+          <div class="pastry-origin">France &middot; Choux</div>
+          <p>Light choux pastry piped and baked to perfection, filled with silky pastry cream and crowned with a mirror-smooth chocolate glaze.</p>
+          <div class="pastry-tags">
+            <span class="pastry-tag">Chocolate</span>
+            <span class="pastry-tag">Cream</span>
+            <span class="pastry-tag">Choux</span>
+          </div>
+        </div>
+      </div>
+      <div class="pastry-card reveal">
+        <div class="pastry-img tart">&#127827;</div>
+        <div class="pastry-info">
+          <h3>Fruit Tart</h3>
+          <div class="pastry-origin">France &middot; P&acirc;tisserie</div>
+          <p>Buttery p&acirc;te sucr&eacute;e shell filled with vanilla bean cr&egrave;me p&acirc;tissi&egrave;re, adorned with glistening seasonal fresh fruits.</p>
+          <div class="pastry-tags">
+            <span class="pastry-tag">Seasonal</span>
+            <span class="pastry-tag">Fresh Fruit</span>
+            <span class="pastry-tag">Vanilla</span>
+          </div>
+        </div>
+      </div>
+      <div class="pastry-card reveal">
+        <div class="pastry-img mille">&#127856;</div>
+        <div class="pastry-info">
+          <h3>Mille-Feuille</h3>
+          <div class="pastry-origin">France &middot; Napoleon</div>
+          <p>A thousand leaves of caramelised puff pastry layered with diplomat cream and topped with classic feathered fondant icing.</p>
+          <div class="pastry-tags">
+            <span class="pastry-tag">Puff Pastry</span>
+            <span class="pastry-tag">Cream</span>
+            <span class="pastry-tag">Iconic</span>
+          </div>
+        </div>
+      </div>
+      <div class="pastry-card reveal">
+        <div class="pastry-img chouquette">&#129480;</div>
+        <div class="pastry-info">
+          <h3>Chouquettes</h3>
+          <div class="pastry-origin">France &middot; Choux</div>
+          <p>Airy little puffs of choux pastry studded with crunchy pearl sugar crystals. Simple, irresistible, and utterly addictive.</p>
+          <div class="pastry-tags">
+            <span class="pastry-tag">Pearl Sugar</span>
+            <span class="pastry-tag">Light</span>
+            <span class="pastry-tag">Snack</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Story -->
+  <section id="story">
+    <div class="story-grid">
+      <div class="story-visual reveal">
+        <div class="story-emoji-grid">
+          <span>&#129360;</span>
+          <span>&#127856;</span>
+          <span>&#129473;</span>
+          <span>&#127874;</span>
+          <span>&#127851;</span>
+          <span>&#129480;</span>
+          <span>&#127827;</span>
+          <span>&#129366;</span>
+          <span>&#127852;</span>
+        </div>
+      </div>
+      <div class="story-text reveal">
+        <span class="section-label">Our Story</span>
+        <h2>Three Generations of Baking Excellence</h2>
+        <p>Founded in 1987 in a small Parisian side street, La P&acirc;tisserie began as a family dream. Grand-m&egrave;re Colette's recipes form the soul of everything we create.</p>
+        <p>Today, we honour those traditions while embracing modern artistry. Every morning at 4am, our bakers laminate dough, temper chocolate, and coax exquisite flavours from the finest ingredients.</p>
+        <div class="story-stats">
+          <div class="stat">
+            <h4>38+</h4>
+            <p>Years</p>
+          </div>
+          <div class="stat">
+            <h4>50k</h4>
+            <p>Croissants/Yr</p>
+          </div>
+          <div class="stat">
+            <h4>12</h4>
+            <p>Bakers</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process -->
+  <section id="process">
+    <div class="section-header reveal">
+      <span class="section-label">The Craft</span>
+      <h2>From Flour to Perfection</h2>
+      <p>Each pastry undergoes a meticulous journey, guided by skilled hands and time-honoured techniques.</p>
+    </div>
+    <div class="process-steps">
+      <div class="process-step reveal">
+        <span class="step-icon">&#127806;</span>
+        <span class="step-num">01</span>
+        <h3>Source</h3>
+        <p>Organic flour from heritage mills and butter from small Norman farms.</p>
+      </div>
+      <div class="process-step reveal">
+        <span class="step-icon">&#129330;</span>
+        <span class="step-num">02</span>
+        <h3>Prepare</h3>
+        <p>Doughs mixed slowly and rested. Croissant dough laminated by hand over two days.</p>
+      </div>
+      <div class="process-step reveal">
+        <span class="step-icon">&#128293;</span>
+        <span class="step-num">03</span>
+        <h3>Bake</h3>
+        <p>Stone-deck ovens with steam injection create the perfect crust every time.</p>
+      </div>
+      <div class="process-step reveal">
+        <span class="step-icon">&#10024;</span>
+        <span class="step-num">04</span>
+        <h3>Present</h3>
+        <p>Final touches of glaze and garnish transform baked goods into edible art.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reviews -->
+  <section id="reviews">
+    <div class="section-header reveal">
+      <span class="section-label">Testimonials</span>
+      <h2>What Our Guests Say</h2>
+      <p>The sweetest compliment is a smile after the first bite.</p>
+    </div>
+    <div class="reviews-grid">
+      <div class="review-card reveal">
+        <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote>&ldquo;The croissants transported me straight to a Parisian morning. Flaky, buttery, and absolutely transcendent.&rdquo;</blockquote>
+        <div class="reviewer">
+          <div class="reviewer-avatar">&#128105;&zwj;&#127859;</div>
+          <div>
+            <div class="reviewer-name">Isabelle Martin</div>
+            <div class="reviewer-title">Food Critic, Le Monde</div>
+          </div>
+        </div>
+      </div>
+      <div class="review-card reveal">
+        <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote>&ldquo;I&rsquo;ve tried macarons across Europe. These are the most perfect I&rsquo;ve ever tasted &mdash; crisp, chewy, and bursting with flavour.&rdquo;</blockquote>
+        <div class="reviewer">
+          <div class="reviewer-avatar">&#128104;&zwj;&#127859;</div>
+          <div>
+            <div class="reviewer-name">James Thornton</div>
+            <div class="reviewer-title">Pastry Chef &amp; Author</div>
+          </div>
+        </div>
+      </div>
+      <div class="review-card reveal">
+        <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote>&ldquo;A magical place. We ordered one of everything and regret nothing. The mille-feuille alone is worth the trip.&rdquo;</blockquote>
+        <div class="reviewer">
+          <div class="reviewer-avatar">&#128105;</div>
+          <div>
+            <div class="reviewer-name">Sophie Nakamura</div>
+            <div class="reviewer-title">Travel Blogger</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Visit -->
+  <section id="visit">
+    <span class="section-label reveal">Come Say Hello</span>
+    <h2 class="reveal">Visit Our Bakery</h2>
+    <p class="reveal">Step through our doors and let the aroma of fresh-baked pastries welcome you home.</p>
+    <div class="visit-details reveal">
+      <div class="visit-item">
+        <span>&#128205;</span>
+        <h4>Location</h4>
+        <p>24 Rue des Rosiers<br>Paris, 75004</p>
+      </div>
+      <div class="visit-item">
+        <span>&#128336;</span>
+        <h4>Hours</h4>
+        <p>Tue &ndash; Sun: 7am &ndash; 7pm<br>Monday: Closed</p>
+      </div>
+      <div class="visit-item">
+        <span>&#128222;</span>
+        <h4>Contact</h4>
+        <p>+33 1 42 78 91 00<br>hello@lapatisserie.fr</p>
+      </div>
+    </div>
+    <a href="#" class="cta-btn reveal">Reserve a Table</a>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-logo">La <span>Patisserie</span></div>
+    <ul class="footer-links">
+      <li><a href="#">Instagram</a></li>
+      <li><a href="#">Facebook</a></li>
+      <li><a href="#">Pinterest</a></li>
+    </ul>
+    <p>&copy; 2026 La Patisserie. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+    }, { passive: true });
+
+    // Hamburger menu
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+    const navOverlay = document.getElementById('navOverlay');
+
+    function openMenu() {
+      menuToggle.classList.add('active');
+      navLinks.classList.add('open');
+      navOverlay.classList.add('visible');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMenu() {
+      menuToggle.classList.remove('active');
+      navLinks.classList.remove('open');
+      navOverlay.classList.remove('visible');
+      document.body.style.overflow = '';
+    }
+
+    menuToggle.addEventListener('click', () => {
+      navLinks.classList.contains('open') ? closeMenu() : openMenu();
+    });
+    navOverlay.addEventListener('click', closeMenu);
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', closeMenu);
+    });
+
+    // Scroll reveal animation
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Smooth scroll for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(link.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.log('SW failed:', err));
+      });
+    }
+  </script>
+
+</body>
+</html>
